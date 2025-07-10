@@ -1,13 +1,15 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, Users, CreditCard, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { TrendingUp, Users, CreditCard, AlertCircle, Settings, UserPlus } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
   const { t } = useLanguage();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const stats = [
     {
@@ -45,6 +47,34 @@ const Dashboard = () => {
         <h1 className="text-2xl font-bold text-gray-800">{t('welcome')}, {user?.name}!</h1>
         <p className="text-gray-600 mt-1">আজকের তারিখ: {new Date().toLocaleDateString('bn-BD')}</p>
       </div>
+
+      {/* Admin Quick Actions */}
+      {isAdmin && (
+        <Card className="bg-emerald-50 border-emerald-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-emerald-700">
+              <Settings className="h-5 w-5" />
+              অ্যাডমিন অ্যাকশন / Admin Actions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-3 flex-wrap">
+              <Link to="/settings">
+                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                  <Settings className="h-4 w-4 mr-2" />
+                  সেটিংস / Settings
+                </Button>
+              </Link>
+              <Link to="/members">
+                <Button variant="outline" className="border-emerald-300 text-emerald-700 hover:bg-emerald-50">
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  নতুন সদস্য / Add Member
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {stats.map((stat, index) => (
