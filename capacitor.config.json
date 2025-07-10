@@ -1,0 +1,16 @@
+
+{
+  "appId": "app.lovable.0d47497b83434970ad7fbf987660b0a2",
+  "appName": "Bondhu Asset Somity",
+  "webDir": "dist",
+  "server": {
+    "url": "https://0d47497b-8343-4970-ad7f-bf987660b0a2.lovableproject.com?forceHideBadge=true",
+    "cleartext": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#10B981"
+    }
+  }
+}
