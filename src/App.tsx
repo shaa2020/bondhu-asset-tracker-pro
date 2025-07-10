@@ -14,6 +14,7 @@ import Members from "./pages/Members";
 import Payments from "./pages/Payments";
 import Investments from "./pages/Investments";
 import Meetings from "./pages/Meetings";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,6 +56,11 @@ const AppContent = () => {
           <Route path="/meetings" element={
             <ProtectedRoute>
               <Meetings />
+            </ProtectedRoute>
+          } />
+          <Route path="/settings" element={
+            <ProtectedRoute>
+              <Settings />
             </ProtectedRoute>
           } />
           <Route path="*" element={<NotFound />} />
