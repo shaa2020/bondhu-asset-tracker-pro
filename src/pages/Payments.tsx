@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,7 +18,7 @@ const Payments = () => {
   const [selectedPayment, setSelectedPayment] = useState<any>(null);
 
   const handlePrint = useReactToPrint({
-    content: () => receiptRef.current,
+    contentRef: receiptRef,
     documentTitle: `Receipt-${selectedPayment?.receiptId}`,
   });
 

@@ -1,6 +1,6 @@
 
 import React, { forwardRef } from 'react';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -60,7 +60,7 @@ export const QRReceipt = forwardRef<HTMLDivElement, QRReceiptProps>(
         </div>
 
         <div className="flex justify-center mb-4">
-          <QRCode
+          <QRCodeSVG
             value={qrData}
             size={120}
             level="M"
