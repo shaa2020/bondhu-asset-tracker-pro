@@ -1,15 +1,18 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, MapPin, Users, CheckCircle, XCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, CheckCircle, XCircle, Vote } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { AddMeetingDialog } from '@/components/AddMeetingDialog';
+import { useToast } from '@/hooks/use-toast';
 
 const Meetings = () => {
   const { t } = useLanguage();
   const { isAdmin } = useAuth();
+  const { toast } = useToast();
 
   const [meetings, setMeetings] = useState([
     {
@@ -51,7 +54,7 @@ const Meetings = () => {
     setMeetings([...meetings, newMeeting]);
   };
 
-  const [votes] = useState([
+  const [votes, setVotes] = useState([
     {
       id: '1',
       title: 'সিলেট টি গার্ডেন বিনিয়োগ',
@@ -61,7 +64,8 @@ const Meetings = () => {
       yesVotes: 12,
       noVotes: 3,
       totalVotes: 15,
-      totalMembers: 23
+      totalMembers: 23,
+      userVoted: false
     },
     {
       id: '2',
@@ -73,9 +77,34 @@ const Meetings = () => {
       noVotes: 15,
       totalVotes: 23,
       totalMembers: 23,
-      result: 'rejected'
+      result: 'rejected',
+      userVoted: true
     }
   ]);
+
+  const handleVote = (voteId: string, voteType: 'yes' | 'no') => {
+    setVotes(prevVotes => 
+      prevVotes.map(vote => {
+        if (vote.id === voteId && vote.status === 'active' && !vote.userVoted) {
+          const newVote = {
+            ...vote,
+            yesVotes: voteType === 'yes' ? vote.yesVotes + 1 : vote.yesVotes,
+            noVotes: voteType === 'no' ? vote.noVotes + 1 : vote.noVotes,
+            totalVotes: vote.totalVotes + 1,
+            userVoted: true
+          };
+          
+          toast({
+            title: "ভোট সফল / Vote Successful",
+            description: `আপনার ${voteType === 'yes' ? 'পক্ষের' : 'বিপক্ষের'} ভোট রেকর্ড করা হয়েছে / Your ${voteType === 'yes' ? 'yes' : 'no'} vote has been recorded`,
+          });
+          
+          return newVote;
+        }
+        return vote;
+      })
+    );
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -108,7 +137,7 @@ const Meetings = () => {
       <div className="space-y-4">
         <h2 className="text-lg font-semibold">সভাসমূহ</h2>
         {meetings.map((meeting) => (
-          <Card key={meeting.id} className="shadow-sm">
+          <Card key={meeting.id} className="shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex justify-between items-start">
                 <div>
@@ -146,18 +175,28 @@ const Meetings = () => {
 
       {/* Voting Section */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">ভোটিং / Voting</h2>
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <Vote className="h-5 w-5" />
+          ভোটিং / Voting
+        </h2>
         {votes.map((vote) => (
-          <Card key={vote.id} className="shadow-sm">
+          <Card key={vote.id} className="shadow-sm hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex justify-between items-start">
                 <div>
                   <CardTitle className="text-lg">{vote.title}</CardTitle>
                   <p className="text-sm text-gray-600 mt-1">{vote.description}</p>
                 </div>
-                <Badge className={vote.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
-                  {vote.status === 'active' ? 'সক্রিয়' : 'সম্পন্ন'}
-                </Badge>
+                <div className="flex gap-2">
+                  <Badge className={vote.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                    {vote.status === 'active' ? 'সক্রিয়' : 'সম্পন্ন'}
+                  </Badge>
+                  {vote.userVoted && (
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                      ভোট দিয়েছেন
+                    </Badge>
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent className="pt-0">
@@ -176,7 +215,7 @@ const Meetings = () => {
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
-                      className="bg-emerald-500 h-2 rounded-full" 
+                      className="bg-emerald-500 h-2 rounded-full transition-all duration-300" 
                       style={{ width: `${(vote.yesVotes / vote.totalMembers) * 100}%` }}
                     ></div>
                   </div>
@@ -190,7 +229,7 @@ const Meetings = () => {
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
-                      className="bg-red-500 h-2 rounded-full" 
+                      className="bg-red-500 h-2 rounded-full transition-all duration-300" 
                       style={{ width: `${(vote.noVotes / vote.totalMembers) * 100}%` }}
                     ></div>
                   </div>
@@ -200,15 +239,30 @@ const Meetings = () => {
                   <span className="text-sm text-gray-600">
                     মোট ভোট: {vote.totalVotes}/{vote.totalMembers}
                   </span>
-                  {vote.status === 'active' && (
+                  {vote.status === 'active' && !vote.userVoted && (
                     <div className="space-x-2">
-                      <Button size="sm" variant="outline" className="text-emerald-600 border-emerald-600">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="text-emerald-600 border-emerald-600 hover:bg-emerald-50"
+                        onClick={() => handleVote(vote.id, 'yes')}
+                      >
                         পক্ষে
                       </Button>
-                      <Button size="sm" variant="outline" className="text-red-600 border-red-600">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="text-red-600 border-red-600 hover:bg-red-50"
+                        onClick={() => handleVote(vote.id, 'no')}
+                      >
                         বিপক্ষে
                       </Button>
                     </div>
+                  )}
+                  {vote.userVoted && vote.status === 'active' && (
+                    <span className="text-sm text-blue-600 font-medium">
+                      আপনার ভোট রেকর্ড করা হয়েছে
+                    </span>
                   )}
                   {vote.result && (
                     <Badge className={vote.result === 'approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}>
