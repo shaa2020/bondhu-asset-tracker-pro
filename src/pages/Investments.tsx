@@ -1,17 +1,17 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, MapPin, Calendar, Plus } from 'lucide-react';
+import { TrendingUp, MapPin, Calendar } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { AddInvestmentDialog } from '@/components/AddInvestmentDialog';
 
 const Investments = () => {
   const { t } = useLanguage();
   const { isAdmin } = useAuth();
 
-  const [investments] = useState([
+  const [investments, setInvestments] = useState([
     {
       id: '1',
       title: 'ধানমন্ডি আবাসিক প্লট',
@@ -50,6 +50,10 @@ const Investments = () => {
     }
   ]);
 
+  const handleAddInvestment = (newInvestment: any) => {
+    setInvestments([...investments, newInvestment]);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-emerald-100 text-emerald-800';
@@ -77,10 +81,7 @@ const Investments = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-xl font-bold">{t('investments')}</h1>
         {isAdmin && (
-          <Button className="bg-emerald-600 hover:bg-emerald-700">
-            <Plus className="h-4 w-4 mr-2" />
-            নতুন বিনিয়োগ
-          </Button>
+          <AddInvestmentDialog onAddInvestment={handleAddInvestment} />
         )}
       </div>
 

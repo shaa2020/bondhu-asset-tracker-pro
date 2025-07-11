@@ -1,8 +1,10 @@
+
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { QRReceipt } from '@/components/QRReceipt';
+import { MemberPaymentHistory } from '@/components/MemberPaymentHistory';
 import { CheckCircle, XCircle, Download, Printer } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,9 +24,44 @@ const Payments = () => {
     documentTitle: `Receipt-${selectedPayment?.receiptId}`,
   });
 
+  // All members data - this should sync with members from Settings/Members pages
+  const [allMembers] = useState([
+    {
+      id: '1',
+      name: 'আহমেদ রহমান',
+      email: 'ahmed@example.com',
+      monthlyContribution: 10000
+    },
+    {
+      id: '2',
+      name: 'ফাতিমা খাতুন',
+      email: 'fatima@example.com',
+      monthlyContribution: 10000
+    },
+    {
+      id: '3',
+      name: 'মোহাম্মদ করিম',
+      email: 'karim@example.com',
+      monthlyContribution: 10000
+    },
+    {
+      id: '4',
+      name: 'রাহেলা বেগম',
+      email: 'rahela@example.com',
+      monthlyContribution: 10000
+    },
+    {
+      id: '5',
+      name: 'সাইফুল ইসলাম',
+      email: 'saiful@example.com',
+      monthlyContribution: 10000
+    }
+  ]);
+
   const [payments, setPayments] = useState([
     {
       id: '1',
+      memberId: '1',
       memberName: 'আহমেদ রহমান',
       month: 'জুলাই ২০২৪',
       amount: 10000,
@@ -34,6 +71,7 @@ const Payments = () => {
     },
     {
       id: '2',
+      memberId: '2',
       memberName: 'ফাতিমা খাতুন',
       month: 'জুলাই ২০২৪',
       amount: 10000,
@@ -43,6 +81,7 @@ const Payments = () => {
     },
     {
       id: '3',
+      memberId: '3',
       memberName: 'মোহাম্মদ করিম',
       month: 'জুলাই ২০২৪',
       amount: 10000,
@@ -52,12 +91,42 @@ const Payments = () => {
     }
   ]);
 
+  // Create payment records for all members for current month
+  const currentMonth = 'জুলাই ২০২৪';
+  const allMemberPayments = allMembers.map(member => {
+    const existingPayment = payments.find(p => p.memberId === member.id);
+    return existingPayment || {
+      id: `temp-${member.id}`,
+      memberId: member.id,
+      memberName: member.name,
+      month: currentMonth,
+      amount: member.monthlyContribution,
+      status: 'unpaid',
+      date: null,
+      receiptId: `BAS-2024-${String(member.id).padStart(3, '0')}`
+    };
+  });
+
   const markAsPaid = (paymentId: string) => {
-    setPayments(payments.map(payment => 
-      payment.id === paymentId 
-        ? { ...payment, status: 'paid', date: new Date().toISOString().split('T')[0] }
-        : payment
-    ));
+    const tempPayment = allMemberPayments.find(p => p.id === paymentId);
+    if (tempPayment && paymentId.startsWith('temp-')) {
+      // Add new payment record
+      const newPayment = {
+        ...tempPayment,
+        id: Date.now().toString(),
+        status: 'paid',
+        date: new Date().toISOString().split('T')[0]
+      };
+      setPayments([...payments, newPayment]);
+    } else {
+      // Update existing payment
+      setPayments(payments.map(payment => 
+        payment.id === paymentId 
+          ? { ...payment, status: 'paid', date: new Date().toISOString().split('T')[0] }
+          : payment
+      ));
+    }
+    
     toast({
       title: "পেমেন্ট আপডেট / Payment Updated",
       description: "পেমেন্ট সফলভাবে পরিশোধিত হিসেবে চিহ্নিত করা হয়েছে",
@@ -69,6 +138,10 @@ const Payments = () => {
     setShowReceipt(true);
   };
 
+  const paidCount = allMemberPayments.filter(p => p.status === 'paid').length;
+  const unpaidCount = allMemberPayments.filter(p => p.status === 'unpaid').length;
+  const totalCollected = allMemberPayments.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0);
+
   return (
     <div className="p-4 pb-20 space-y-4">
       <div className="flex justify-between items-center">
@@ -78,8 +151,36 @@ const Payments = () => {
         </div>
       </div>
 
+      {/* Summary Cards */}
+      <div className="grid grid-cols-3 gap-3">
+        <Card className="bg-emerald-50">
+          <CardContent className="p-3">
+            <div className="text-center">
+              <p className="text-xs text-emerald-600">পরিশোধিত</p>
+              <p className="text-lg font-bold text-emerald-700">{paidCount}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-red-50">
+          <CardContent className="p-3">
+            <div className="text-center">
+              <p className="text-xs text-red-600">বকেয়া</p>
+              <p className="text-lg font-bold text-red-700">{unpaidCount}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-blue-50">
+          <CardContent className="p-3">
+            <div className="text-center">
+              <p className="text-xs text-blue-600">মোট সংগ্রহ</p>
+              <p className="text-sm font-bold text-blue-700">৳{totalCollected.toLocaleString()}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="grid grid-cols-1 gap-4">
-        {payments.map((payment) => (
+        {allMemberPayments.map((payment) => (
           <Card key={payment.id} className="shadow-sm">
             <CardContent className="p-4">
               <div className="flex justify-between items-center mb-3">
@@ -110,6 +211,10 @@ const Payments = () => {
                 </div>
                 
                 <div className="flex gap-2">
+                  <MemberPaymentHistory 
+                    memberName={payment.memberName} 
+                    memberId={payment.memberId} 
+                  />
                   {payment.status === 'unpaid' && isAdmin && (
                     <Button 
                       size="sm" 

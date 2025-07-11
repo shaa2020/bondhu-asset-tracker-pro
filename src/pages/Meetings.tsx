@@ -1,17 +1,17 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, MapPin, Users, Plus, CheckCircle, XCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, CheckCircle, XCircle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { AddMeetingDialog } from '@/components/AddMeetingDialog';
 
 const Meetings = () => {
   const { t } = useLanguage();
   const { isAdmin } = useAuth();
 
-  const [meetings] = useState([
+  const [meetings, setMeetings] = useState([
     {
       id: '1',
       title: 'মাসিক সাধারণ সভা',
@@ -46,6 +46,10 @@ const Meetings = () => {
       totalMembers: 23
     }
   ]);
+
+  const handleAddMeeting = (newMeeting: any) => {
+    setMeetings([...meetings, newMeeting]);
+  };
 
   const [votes] = useState([
     {
@@ -96,10 +100,7 @@ const Meetings = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-xl font-bold">{t('meetings')}</h1>
         {isAdmin && (
-          <Button className="bg-emerald-600 hover:bg-emerald-700">
-            <Plus className="h-4 w-4 mr-2" />
-            নতুন সভা
-          </Button>
+          <AddMeetingDialog onAddMeeting={handleAddMeeting} />
         )}
       </div>
 
