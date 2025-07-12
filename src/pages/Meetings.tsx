@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { Calendar, Clock, MapPin, Users, CheckCircle, XCircle, Vote } from 'luci
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { AddMeetingDialog } from '@/components/AddMeetingDialog';
+import { AddVoteDialog } from '@/components/AddVoteDialog';
 import { useToast } from '@/hooks/use-toast';
 
 const Meetings = () => {
@@ -82,6 +82,10 @@ const Meetings = () => {
     }
   ]);
 
+  const handleAddVote = (newVote: any) => {
+    setVotes([...votes, newVote]);
+  };
+
   const handleVote = (voteId: string, voteType: 'yes' | 'no') => {
     setVotes(prevVotes => 
       prevVotes.map(vote => {
@@ -129,7 +133,10 @@ const Meetings = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-xl font-bold">{t('meetings')}</h1>
         {isAdmin && (
-          <AddMeetingDialog onAddMeeting={handleAddMeeting} />
+          <div className="flex gap-2">
+            <AddMeetingDialog onAddMeeting={handleAddMeeting} />
+            <AddVoteDialog onAddVote={handleAddVote} />
+          </div>
         )}
       </div>
 
